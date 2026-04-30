@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HackMate — Find Your Team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ── Reset & Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg:        #f4f2ff;
+  --surface:   #ffffff;
+  --surface2:  #f0eeff;
+  --border:    #e2deff;
+  --border2:   #cdc5ff;
+  --primary:   #6c47ff;
+  --primary2:  #9b7dff;
+  --accent:    #ff6b8a;
+  --green:     #00c48c;
+  --text:      #1a1535;
+  --text2:     #6b6490;
+  --text3:     #a09cc0;
+  --grad:      linear-gradient(135deg, #6c47ff, #9b7dff);
+  --grad2:     linear-gradient(135deg, #6c47ff, #ff6b8a);
+  --shadow:    0 4px 24px -6px rgba(108,71,255,0.18);
+  --shadow-lg: 0 16px 48px -12px rgba(108,71,255,0.28);
+  --r:         16px;
+  --r-lg:      24px;
+  --font:      'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Noise texture overlay ─────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-family: var(--font); }
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── Nav ───────────────────────────────────────────────────────────────── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(244,242,255,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-logo-icon {
+  height: 36px;
+  width: 36px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  box-shadow: var(--shadow);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s, transform 0.2s;
+  letter-spacing: 0.3px;
+}
+.nav-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.nav-btn svg { width: 15px; height: 15px; }
+
+/* ── Home page ─────────────────────────────────────────────────────────── */
+.home-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fadeUp 0.5s ease both;
+}
+.hero h1 {
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  background: var(--grad2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+.hero p {
+  font-size: 16px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* Profile Form */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface2);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 20px;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108,71,255,0.12);
+}
+
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.skill-btn {
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.skill-btn.active {
+  background: var(--grad);
+  border-color: transparent;
+  color: white;
+  box-shadow: var(--shadow);
+}
+.skill-btn:hover:not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface2);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: border-color 0.2s;
+}
+.form-select:focus { border-color: var(--primary); }
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s, transform 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Match Card ────────────────────────────────────────────────────────── */
+.match-section { animation: fadeUp 0.4s ease both; }
+
+.match-greeting {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.match-greeting h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.match-greeting p { color: var(--text2); margin-top: 6px; }
+
+.match-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.3s ease both;
+}
+
+.match-card-header {
+  background: var(--grad);
+  padding: 36px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+.match-avatar {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 24px;
+  color: white;
+}
+
+.match-card-header h3 {
+  margin-top: 16px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.match-badge {
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.85;
+  font-family: var(--font-mono);
+}
+
+.match-card-body { padding: 24px; }
+
+.match-desc {
+  text-align: center;
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.match-section-label {
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.tag {
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-family: var(--font);
+  font-weight: 600;
+  color: var(--text2);
+}
+
+.match-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-skip {
+  padding: 13px;
+  border-radius: 14px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-skip:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-match {
+  padding: 13px;
+  border-radius: 14px;
+  background: var(--grad);
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-match:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* Matches list */
+.matches-strip {
+  margin-top: 32px;
+  text-align: center;
+}
+.matches-strip-label {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.matches-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.match-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 4px 14px 4px 4px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.3s ease both;
+}
+.pill-avatar {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: white;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pill-name { font-size: 13px; font-weight: 600; }
+
+/* All caught up */
+.caught-up {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 48px 32px;
+  box-shadow: var(--shadow);
+}
+.caught-up-icon {
+  height: 56px;
+  width: 56px;
+  border-radius: 50%;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 22px;
+}
+.btn-restart {
+  margin-top: 20px;
+  padding: 11px 24px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+/* ── Ideas Section ─────────────────────────────────────────────────────── */
+.ideas-section {
+  max-width: 960px;
+  margin: 56px auto 0;
+  padding: 0 24px;
+}
+.ideas-header { text-align: center; margin-bottom: 32px; }
+.ideas-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.ideas-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.ideas-header p { color: var(--text2); font-size: 14px; }
+
+.ideas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  padding-bottom: 64px;
+}
+
+.idea-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+}
+.idea-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.idea-card:hover {
+  border-color: var(--primary2);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.idea-card:hover::before { opacity: 0.04; }
+
+.idea-num {
+  height: 40px;
+  width: 40px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: white;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.idea-cta {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 11px;
+  font-family: var(--font);
+  font-weight: 700;
+  color: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.idea-card:hover .idea-cta { opacity: 1; }
+
+.idea-title {
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  position: relative;
+}
+.idea-tagline {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.65;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+/* ── Roadmap Modal ─────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,21,53,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  width: 100%;
+  max-width: 680px;
+  max-height: 88vh;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.25s;
+  overflow: hidden;
+}
+.modal-overlay.open .modal {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.modal-close {
+  height: 32px;
+  width: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.modal-close:hover { border-color: var(--primary); color: var(--primary); }
+
+.modal-idea-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.modal-idea-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+
+.modal-title {
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.modal-tagline {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Key gate inside modal */
+.key-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 0;
+  gap: 16px;
+}
+.key-gate-icon {
+  height: 56px;
+  width: 56px;
+  border-radius: 16px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: var(--shadow);
+}
+.key-gate h3 { font-size: 17px; font-weight: 800; }
+.key-gate p { font-size: 13px; color: var(--text2); max-width: 280px; }
+
+.key-input-row { display: flex; gap: 8px; width: 100%; }
+.key-input {
+  flex: 1;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.key-input:focus { border-color: var(--primary); }
+.key-submit {
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.key-submit:hover { opacity: 0.88; }
+.key-link {
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+}
+.key-link:hover { text-decoration: underline; }
+
+/* Spinner */
+.spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  gap: 16px;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.spinner-wrap p { font-size: 13px; color: var(--text2); }
+
+/* Roadmap content */
+.roadmap-content { font-size: 14px; line-height: 1.75; color: var(--text); }
+.roadmap-content .rm-h2 {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 20px 0 8px;
+  display: block;
+}
+.roadmap-content .rm-h2:first-child { margin-top: 0; }
+.roadmap-content .rm-h3 {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 14px 0 6px;
+  display: block;
+}
+.roadmap-content ul { padding-left: 18px; margin: 6px 0; }
+.roadmap-content li { margin: 4px 0; }
+.roadmap-content strong { font-weight: 700; }
+.roadmap-content .rm-gap { height: 8px; display: block; }
+.roadmap-content code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+.roadmap-content pre {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.roadmap-content pre code { background: none; border: none; padding: 0; }
+
+/* Error */
+.error-box {
+  background: #fff1f1;
+  border: 1px solid #ffc0c0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #d00;
+}
+
+/* ── Chat Page ─────────────────────────────────────────────────────────── */
+#page-chat {
+  height: calc(100vh - 64px);
+  display: none;
+  flex-direction: row;
+  overflow: hidden;
+}
+#page-chat.active { display: flex; }
+
+/* Sidebar */
+.chat-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-section-label {
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s;
+  width: 100%;
+  background: none;
+  text-align: left;
+}
+.sidebar-item:hover {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
+.sidebar-num {
+  height: 22px;
+  width: 22px;
+  border-radius: 6px;
+  background: var(--grad);
+  color: white;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-av {
+  height: 28px;
+  width: 28px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: white;
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-text { min-width: 0; }
+.sidebar-text p {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-text span {
+  font-size: 10px;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.sidebar-arrow {
+  margin-left: auto;
+  color: var(--text3);
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.sidebar-item:hover .sidebar-arrow { opacity: 1; }
+
+/* Chat main */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Key gate full */
+.chat-key-gate {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.chat-key-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 36px 32px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.chat-key-icon {
+  height: 56px;
+  width: 56px;
+  border-radius: 16px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: var(--shadow);
+}
+
+.chat-key-card h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+.chat-key-card p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+.chat-key-input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.chat-key-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108,71,255,0.12);
+}
+
+.chat-key-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--grad);
+  color: white;
+  border: none;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s;
+}
+.chat-key-btn:hover { opacity: 0.88; }
+.chat-key-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.chat-key-link {
+  font-size: 12px;
+  color: var(--primary);
+  text-decoration: none;
+}
+.chat-key-link:hover { text-decoration: underline; }
+
+/* Messages */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Empty state */
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 28px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.empty-icon {
+  height: 64px;
+  width: 64px;
+  border-radius: 20px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: var(--shadow-lg);
+}
+
+.chat-empty h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.chat-empty p { font-size: 14px; color: var(--text2); max-width: 320px; line-height: 1.65; }
+
+.starters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.starter-btn {
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.starter-btn:hover {
+  border-color: var(--primary2);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.starter-btn .s-icon { font-size: 18px; margin-bottom: 6px; display: block; }
+.starter-btn .s-label {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+  margin-bottom: 3px;
+}
+.starter-btn .s-text { font-size: 11px; color: var(--text2); line-height: 1.5; display: block; }
+
+/* Bubble */
+.bubble-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  animation: fadeUp 0.25s ease both;
+}
+.bubble-row.user { flex-direction: row-reverse; }
+
+.bubble-av {
+  height: 32px;
+  width: 32px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+
+.bubble {
+  max-width: 76%;
+  padding: 13px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  box-shadow: var(--shadow);
+}
+
+.bubble.user {
+  background: var(--grad);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble.ai {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Bubble markdown */
+.bubble.ai .rm-h2 {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary);
+  display: block;
+  margin: 10px 0 4px;
+}
+.bubble.ai .rm-h2:first-child { margin-top: 0; }
+.bubble.ai ul { padding-left: 16px; margin: 4px 0; }
+.bubble.ai li { margin: 3px 0; }
+.bubble.ai strong { font-weight: 700; }
+.bubble.ai .rm-gap { display: block; height: 6px; }
+.bubble.ai code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Typing dots */
+.typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 2px;
+}
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary2);
+  animation: bounce 0.8s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+/* Input bar */
+.chat-input-bar {
+  border-top: 1px solid var(--border);
+  background: rgba(244,242,255,0.85);
+  backdrop-filter: blur(12px);
+  padding: 16px 24px;
+  flex-shrink: 0;
+}
+
+.chat-input-row {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.chat-textarea {
+  flex: 1;
+  resize: none;
+  padding: 13px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  min-height: 48px;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.6;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.chat-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108,71,255,0.1), var(--shadow);
+}
+
+.chat-send {
+  height: 48px;
+  width: 48px;
+  border-radius: 14px;
+  background: var(--grad);
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+  transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-send:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+.chat-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.chat-hint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 8px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* New chat + disconnect row */
+.chat-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.chat-top-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chat-top-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-7px); }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .chat-sidebar { display: none; }
+  .starters-grid { grid-template-columns: 1fr; }
+  .ideas-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo" onclick="goHome()">
+    <div class="nav-logo-icon">⚡</div>
+    HackMate
+  </div>
+  <button class="nav-btn" onclick="goChat()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+    AI Coach
+  </button>
+</nav>
+
+<!-- ── HOME PAGE ─────────────────────────────────────────────────────────────── -->
+<div id="page-home" class="page active">
+
+  <!-- Profile form section -->
+  <div id="section-form">
+    <div class="home-wrap">
+      <div class="hero">
+        <h1>Find your perfect hackathon teammate</h1>
+        <p>Build your profile, swipe through hackers, and ship something great this weekend.</p>
+      </div>
+      <div class="card">
+        <div style="text-align:center;margin-bottom:24px;">
+          <span style="font-family:var(--font);font-size:12px;font-weight:700;color:var(--primary);letter-spacing:0.5px;">⚡ Build your hacker profile</span>
+          <h2 style="font-size:22px;font-weight:800;margin-top:8px;letter-spacing:-0.3px;">Tell us about you</h2>
+          <p style="font-size:13px;color:var(--text2);margin-top:6px;">We'll match you with teammates who complement your strengths.</p>
+        </div>
+
+        <label class="form-label">Name</label>
+        <input class="form-input" id="inp-name" placeholder="Alex Hacker" />
+
+        <label class="form-label">Skills</label>
+        <div class="skills-grid" id="skills-grid"></div>
+
+        <label class="form-label">Interests</label>
+        <input class="form-input" id="inp-interests" placeholder="AI for education, climate, devtools…" />
+
+        <label class="form-label">Experience level</label>
+        <select class="form-select" id="inp-exp">
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+
+        <button class="btn-primary" id="btn-find" onclick="submitProfile()" disabled>Find my teammates</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match section -->
+  <div id="section-match" style="display:none;">
+    <div class="home-wrap">
+      <div class="match-section">
+        <div class="match-greeting">
+          <h2 id="match-greeting-text">Hey 👋</h2>
+          <p>Here's a hacker we think you'd vibe with.</p>
+        </div>
+        <div id="match-card-wrap"></div>
+        <div id="matches-strip" style="display:none;" class="matches-strip">
+          <div class="matches-strip-label" id="matches-label">Your matches (0)</div>
+          <div class="matches-pills" id="matches-pills"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ideas section -->
+    <div class="ideas-section">
+      <div class="ideas-header">
+        <div class="ideas-eyebrow">💡 Need inspiration?</div>
+        <h2>Hackathon ideas</h2>
+        <p>Click any idea to get a full AI-generated roadmap, tech stack, and pitch strategy.</p>
+      </div>
+      <div class="ideas-grid" id="ideas-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── CHAT PAGE ──────────────────────────────────────────────────────────────── -->
+<div id="page-chat" class="page">
+
+  <!-- Sidebar -->
+  <aside class="chat-sidebar">
+    <div>
+      <div class="sidebar-section-label">💡 Project ideas</div>
+      <div id="sidebar-ideas"></div>
+    </div>
+    <div>
+      <div class="sidebar-section-label">👥 Teammates</div>
+      <div id="sidebar-teammates"></div>
+    </div>
+  </aside>
+
+  <!-- Main chat -->
+  <div class="chat-main">
+
+    <!-- Top bar (new chat / disconnect) -->
+    <div class="chat-top-bar" id="chat-top-bar" style="display:none;">
+      <button class="chat-top-btn" id="btn-new-chat" onclick="newChat()">↺ New chat</button>
+      <button class="chat-top-btn" onclick="disconnectKey()" style="color:var(--accent);border-color:var(--accent);">✕ Disconnect</button>
+    </div>
+
+    <!-- Key gate -->
+    <div class="chat-key-gate" id="chat-key-gate">
+      <div class="chat-key-card">
+        <div class="chat-key-icon">⚡</div>
+        <h2>Connect Gemini AI</h2>
+        <p>Paste your Gemini API key to start getting hackathon suggestions from your AI coach.</p>
+        <input class="chat-key-input" type="password" id="chat-key-input" placeholder="AIzaSy…" oninput="onKeyInput()" onkeydown="if(event.key==='Enter')saveKey()" />
+        <button class="chat-key-btn" id="chat-key-btn" onclick="saveKey()" disabled>Start chatting</button>
+        <a class="chat-key-link" href="https://aistudio.google.com/app/apikey" target="_blank">Get a free key at Google AI Studio →</a>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div id="chat-area" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+      <div class="chat-messages" id="chat-messages">
+        <!-- empty state injected by JS -->
+      </div>
+      <div class="chat-input-bar">
+        <div class="chat-input-row">
+          <textarea class="chat-textarea" id="chat-textarea"
+            placeholder="Describe your hackathon — theme, your skills, team size, time limit…"
+            rows="1"
+            onkeydown="onChatKey(event)"
+            oninput="autoGrow(this)"></textarea>
+          <button class="chat-send" id="chat-send" onclick="sendMessage()" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="chat-hint">Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── ROADMAP MODAL ───────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div style="min-width:0;">
+        <div class="modal-idea-tags" id="modal-tags"></div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-tagline" id="modal-tagline"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const SKILLS = ["frontend", "backend", "AI", "design"];
+
+const TEAMMATES = [
+  { id:"1", name:"Ada Chen",        skills:["frontend","design"],  interests:"Design systems, motion UI, climate tech",    experience:"Intermediate", description:"Loves crafting delightful interfaces and shipping pixel-perfect prototypes overnight.", avatar:"AC" },
+  { id:"2", name:"Diego Park",      skills:["backend","AI"],       interests:"LLM agents, vector DBs, devtools",            experience:"Advanced",     description:"Backend wizard who can stand up an API, queue and vector store before the pizza arrives.", avatar:"DP" },
+  { id:"3", name:"Priya Natarajan", skills:["AI","frontend"],      interests:"Computer vision, education, accessibility",   experience:"Intermediate", description:"ML engineer with a soft spot for educational tools and clean React components.", avatar:"PN" },
+  { id:"4", name:"Marcus Lee",      skills:["design","frontend"],  interests:"Branding, 3D, generative art",                experience:"Beginner",     description:"Designer turned coder. Brings a strong visual identity and Figma magic to every team.", avatar:"ML" },
+  { id:"5", name:"Sara Okafor",     skills:["backend","frontend"], interests:"Fintech, real-time apps, dev experience",     experience:"Advanced",     description:"Full-stack engineer who lives for crunchy real-time features and clean architecture.", avatar:"SO" },
+  { id:"6", name:"Yuki Tanaka",     skills:["AI","backend"],       interests:"RAG, healthcare, open source",                experience:"Intermediate", description:"Researcher-turned-builder shipping practical AI for healthcare workflows.", avatar:"YT" },
+];
+
+const IDEAS = [
+  { title:"StudyBuddy AI",  tagline:"Turn any PDF or lecture into flashcards, quizzes and a chat tutor in one click.", stack:["AI","frontend","backend"] },
+  { title:"GreenRoute",     tagline:"A maps app that suggests the lowest-carbon route across walking, transit and rideshare.", stack:["frontend","backend"] },
+  { title:"PitchPal",       tagline:"Practice your hackathon pitch with an AI judge that scores clarity, demo and impact.", stack:["AI","design","frontend"] },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+let profile = null;
+let selectedSkills = [];
+let seen = new Set();
+let matches = [];
+let queue = [];
+let apiKey = localStorage.getItem("hm_gemini_key") || "";
+let chatMessages = [];
+let chatLoading = false;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+function init() {
+  renderSkillButtons();
+  renderSidebarIdeas();
+  renderSidebarTeammates();
+  if (apiKey) showChatArea();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+function goHome() {
+  document.getElementById("page-home").classList.add("active");
+  document.getElementById("page-chat").classList.remove("active");
+}
+
+function goChat() {
+  document.getElementById("page-home").classList.remove("active");
+  document.getElementById("page-chat").classList.add("active");
+}
+
+// ── Skills ─────────────────────────────────────────────────────────────────────
+
+function renderSkillButtons() {
+  const grid = document.getElementById("skills-grid");
+  grid.innerHTML = SKILLS.map(s => `
+    <button class="skill-btn ${selectedSkills.includes(s) ? "active" : ""}"
+      onclick="toggleSkill('${s}')">${s}</button>
+  `).join("");
+}
+
+function toggleSkill(s) {
+  if (selectedSkills.includes(s)) selectedSkills = selectedSkills.filter(x => x !== s);
+  else selectedSkills.push(s);
+  renderSkillButtons();
+  checkFormValid();
+}
+
+function checkFormValid() {
+  const name = document.getElementById("inp-name").value.trim();
+  document.getElementById("btn-find").disabled = !(name && selectedSkills.length > 0);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("inp-name").addEventListener("input", checkFormValid);
+  init();
+});
+
+// ── Profile submit ─────────────────────────────────────────────────────────────
+
+function submitProfile() {
+  const name = document.getElementById("inp-name").value.trim();
+  const interests = document.getElementById("inp-interests").value.trim();
+  const experience = document.getElementById("inp-exp").value;
+  if (!name || !selectedSkills.length) return;
+  profile = { name, skills: selectedSkills, interests, experience };
+  seen = new Set();
+  matches = [];
+  buildQueue();
+  document.getElementById("section-form").style.display = "none";
+  document.getElementById("section-match").style.display = "block";
+  document.getElementById("match-greeting-text").textContent = `Hey ${name.split(" ")[0]} 👋`;
+  renderIdeasGrid();
+  showNextCard();
+}
+
+// ── Matching ───────────────────────────────────────────────────────────────────
+
+function buildQueue() {
+  queue = [...TEAMMATES]
+    .filter(t => !seen.has(t.id))
+    .sort((a, b) => score(b) - score(a));
+}
+
+function score(t) {
+  const comp = t.skills.filter(s => !profile.skills.includes(s)).length;
+  const over = t.skills.filter(s => profile.skills.includes(s)).length;
+  const exp  = t.experience === profile.experience ? 1 : 0;
+  return comp * 2 + over + exp;
+}
+
+function showNextCard() {
+  buildQueue();
+  const wrap = document.getElementById("match-card-wrap");
+  if (queue.length === 0) {
+    wrap.innerHTML = `
+      <div class="caught-up">
+        <div class="caught-up-icon">❤️</div>
+        <h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">You're all caught up!</h3>
+        <p style="font-size:13px;color:var(--text2);">You've seen every available hacker. Restart to browse again.</p>
+        <button class="btn-restart" onclick="resetAll()">Start over</button>
+      </div>`;
+    return;
+  }
+  const t = queue[0];
+  wrap.innerHTML = `
+    <div class="match-card">
+      <div class="match-card-header">
+        <div class="match-avatar">${t.avatar}</div>
+        <h3>${t.name}</h3>
+        <div class="match-badge">${t.experience}</div>
+      </div>
+      <div class="match-card-body">
+        <p class="match-desc">${t.description}</p>
+        <div class="match-section-label">⚡ Skills</div>
+        <div class="tags">${t.skills.map(s => `<span class="tag">${s}</span>`).join("")}</div>
+        <div class="match-section-label">Interests</div>
+        <p style="font-size:13px;color:var(--text2);">${t.interests}</p>
+        <div class="match-actions">
+          <button class="btn-skip" onclick="skipCard()">✕ Skip</button>
+          <button class="btn-match" onclick="matchCard()">❤️ Match</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function matchCard() {
+  const t = queue[0];
+  if (!t) return;
+  matches.push(t);
+  seen.add(t.id);
+  renderMatchesPills();
+  showNextCard();
+}
+
+function skipCard() {
+  const t = queue[0];
+  if (!t) return;
+  seen.add(t.id);
+  showNextCard();
+}
+
+function renderMatchesPills() {
+  if (!matches.length) return;
+  document.getElementById("matches-strip").style.display = "block";
+  document.getElementById("matches-label").textContent = `Your matches (${matches.length})`;
+  document.getElementById("matches-pills").innerHTML = matches.map(m => `
+    <div class="match-pill">
+      <div class="pill-avatar">${m.avatar}</div>
+      <span class="pill-name">${m.name}</span>
+    </div>`).join("");
+}
+
+function resetAll() {
+  profile = null; seen = new Set(); matches = []; queue = []; selectedSkills = [];
+  document.getElementById("section-form").style.display = "block";
+  document.getElementById("section-match").style.display = "none";
+  document.getElementById("inp-name").value = "";
+  document.getElementById("inp-interests").value = "";
+  renderSkillButtons();
+  checkFormValid();
+}
+
+// ── Ideas grid ─────────────────────────────────────────────────────────────────
+
+function renderIdeasGrid() {
+  document.getElementById("ideas-grid").innerHTML = IDEAS.map((idea, i) => `
+    <button class="idea-card" onclick="openModal(${i})">
+      <div class="idea-num">${i + 1}</div>
+      <span class="idea-cta">Full roadmap →</span>
+      <div class="idea-title">${idea.title}</div>
+      <div class="idea-tagline">${idea.tagline}</div>
+      <div class="tags">${idea.stack.map(s => `<span class="tag">${s}</span>`).join("")}</div>
+    </button>`).join("");
+}
+
+// ── Roadmap Modal ──────────────────────────────────────────────────────────────
+
+function openModal(i) {
+  const idea = IDEAS[i];
+  document.getElementById("modal-tags").innerHTML = idea.stack.map(s => `<span class="modal-idea-tag">${s}</span>`).join("");
+  document.getElementById("modal-title").textContent = idea.title;
+  document.getElementById("modal-tagline").textContent = idea.tagline;
+  document.getElementById("modal-overlay").classList.add("open");
+  if (apiKey) {
+    showRoadmapLoading();
+    fetchRoadmap(idea);
+  } else {
+    showModalKeyGate(idea);
+  }
+}
+
+function closeModal() {
+  document.getElementById("modal-overlay").classList.remove("open");
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById("modal-overlay")) closeModal();
+}
+
+function showModalKeyGate(idea) {
+  document.getElementById("modal-body").innerHTML = `
+    <div class="key-gate">
+      <div class="key-gate-icon">🔑</div>
+      <h3>Connect Gemini AI</h3>
+      <p>Enter your Gemini API key to generate a full roadmap for this idea.</p>
+      <div class="key-input-row">
+        <input class="key-input" type="password" id="modal-key-input" placeholder="AIzaSy…" />
+        <button class="key-submit" onclick="saveModalKey('${idea.title}')">Generate</button>
+      </div>
+      <a class="key-link" href="https://aistudio.google.com/app/apikey" target="_blank">Get a free Gemini key →</a>
+    </div>`;
+}
+
+function saveModalKey(title) {
+  const k = document.getElementById("modal-key-input").value.trim();
+  if (!k) return;
+  apiKey = k;
+  localStorage.setItem("hm_gemini_key", k);
+  showChatArea();
+  const idea = IDEAS.find(i => i.title === title);
+  showRoadmapLoading();
+  fetchRoadmap(idea);
+}
+
+function showRoadmapLoading() {
+  document.getElementById("modal-body").innerHTML = `
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+      <p>Gemini is building your roadmap…</p>
+    </div>`;
+}
+
+async function fetchRoadmap(idea) {
+  const prompt = `You are an expert hackathon mentor. Generate a complete, detailed hackathon project plan.
+
+Title: "${idea.title}"
+Tagline: ${idea.tagline}
+Tech stack areas: ${idea.stack.join(", ")}
+
+Structure with these exact sections:
+## 🎯 Problem & Opportunity
+## 🏗️ System Architecture
+## 🛠️ Tech Stack
+## ⏱️ 24-Hour Sprint Timeline
+## ✅ MVP Scope
+## 🎤 Pitch & Demo Strategy
+## 🏆 Winning Edge
+
+Be specific, tactical, and hackathon-aware. No fluff.`;
+
+  try {
+    const result = await callGemini([{ role:"user", text: prompt }]);
+    document.getElementById("modal-body").innerHTML = `<div class="roadmap-content">${renderMd(result)}</div>`;
+  } catch(e) {
+    document.getElementById("modal-body").innerHTML = `
+      <div class="error-box">⚠️ ${e.message}</div>
+      <p style="margin-top:12px;font-size:12px;color:var(--text2);">Check your API key or try again.</p>`;
+  }
+}
+
+// ── Gemini API ─────────────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT = `You are HackMate AI — a sharp, expert hackathon coach.
+
+When a user describes their hackathon, you:
+1. Suggest the 1-2 BEST fitting ideas from the pool
+2. Recommend specific teammates and explain exactly WHY they fit
+3. Give a concrete 24-hour roadmap with hour ranges
+4. End with the strongest pitch angle
+
+App's idea pool:
+1. "StudyBuddy AI" — Turn any PDF or lecture into flashcards, quizzes and a chat tutor. [AI, frontend, backend]
+2. "GreenRoute" — Lowest-carbon route app across walking, transit, rideshare. [frontend, backend]
+3. "PitchPal" — AI judge that scores your hackathon pitch. [AI, design, frontend]
+
+Available teammates:
+• Ada Chen | frontend, design | Intermediate | Design systems, motion UI, climate tech
+• Diego Park | backend, AI | Advanced | LLM agents, vector DBs, devtools
+• Priya Natarajan | AI, frontend | Intermediate | Computer vision, education, accessibility
+• Marcus Lee | design, frontend | Beginner | Branding, 3D, generative art
+• Sara Okafor | backend, frontend | Advanced | Fintech, real-time apps, dev experience
+• Yuki Tanaka | AI, backend | Intermediate | RAG, healthcare, open source
+
+Use **bold** for key terms. Use ## for section headers. Use bullet lists. Be direct and tactical.`;
+
+async function callGemini(messages) {
+  const contents = messages.map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.text }]
+  }));
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents,
+        generationConfig: { temperature: 0.75, maxOutputTokens: 2000 }
+      })
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Gemini error ${res.status}`);
+  }
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Empty response from Gemini.");
+  return text;
+}
+
+// ── Markdown renderer ──────────────────────────────────────────────────────────
+
+function renderMd(raw) {
+  return raw
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/```[\w]*\n?([\s\S]*?)```/g,"<pre><code>$1</code></pre>")
+    .replace(/`([^`]+)`/g,"<code>$1</code>")
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/^## (.+)$/gm,'<span class="rm-h2">$1</span>')
+    .replace(/^### (.+)$/gm,'<span class="rm-h3">$1</span>')
+    .replace(/^[-•] (.+)$/gm,"<li>$1</li>")
+    .replace(/^\d+\. (.+)$/gm,"<li>$1</li>")
+    .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+    .replace(/\n{2,}/g,'<span class="rm-gap"></span>');
+}
+
+// ── Chat ───────────────────────────────────────────────────────────────────────
+
+function showChatArea() {
+  document.getElementById("chat-key-gate").style.display = "none";
+  document.getElementById("chat-area").style.display = "flex";
+  document.getElementById("chat-top-bar").style.display = "flex";
+  renderChatEmpty();
+}
+
+function renderChatEmpty() {
+  const STARTERS = [
+    { icon:"🎓", label:"EdTech hackathon", text:"I'm joining a 24-hour hackathon focused on education. I'm a frontend dev with React experience. Suggest the best idea, which teammates I need, and give me a roadmap." },
+    { icon:"🌱", label:"Climate hack",     text:"Climate-focused hackathon, 48 hours, team of 2. I know Python and some ML. What should we build, who else do we need, and what's our pitch?" },
+    { icon:"🤖", label:"AI project",       text:"We want to build something with LLMs. 3 person team, 24 hours — one designer, one backend, I do frontend. Best AI project we can realistically ship and win?" },
+    { icon:"💰", label:"Fintech hack",     text:"Fintech hackathon, open theme, 36 hours. Intermediate full-stack. Suggest a winning idea with full roadmap and team breakdown." },
+  ];
+  document.getElementById("chat-messages").innerHTML = `
+    <div class="chat-empty">
+      <div class="empty-icon">✨</div>
+      <div>
+        <h2>Describe your hackathon</h2>
+        <p>Tell me the theme, your skills, team size, and time limit — I'll suggest the best idea, pick your teammates, and give you a full roadmap.</p>
+      </div>
+      <div class="starters-grid">
+        ${STARTERS.map(s => `
+          <button class="starter-btn" onclick="sendText(${JSON.stringify(s.text)})">
+            <span class="s-icon">${s.icon}</span>
+            <span class="s-label">${s.label}</span>
+            <span class="s-text">${s.text.slice(0, 60)}…</span>
+          </button>`).join("")}
+      </div>
+      <p style="font-size:11px;color:var(--text3);">Or click any idea / teammate in the sidebar →</p>
+    </div>`;
+}
+
+function appendBubble(role, content) {
+  const msgs = document.getElementById("chat-messages");
+  // remove empty state if present
+  const empty = msgs.querySelector(".chat-empty");
+  if (empty) empty.remove();
+
+  const div = document.createElement("div");
+  div.className = `bubble-row ${role}`;
+  if (role === "user") {
+    div.innerHTML = `
+      <div class="bubble user">${content.replace(/\n/g,"<br>")}</div>`;
+  } else {
+    div.innerHTML = `
+      <div class="bubble-av">🤖</div>
+      <div class="bubble ai">${renderMd(content)}</div>`;
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function showTyping() {
+  const msgs = document.getElementById("chat-messages");
+  const div = document.createElement("div");
+  div.className = "bubble-row";
+  div.id = "typing-indicator";
+  div.innerHTML = `
+    <div class="bubble-av">🤖</div>
+    <div class="bubble ai"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById("typing-indicator");
+  if (t) t.remove();
+}
+
+async function sendText(text) {
+  if (!text.trim() || chatLoading) return;
+  chatLoading = true;
+  document.getElementById("chat-send").disabled = true;
+  document.getElementById("chat-textarea").value = "";
+  document.getElementById("chat-textarea").style.height = "auto";
+
+  chatMessages.push({ role: "user", text });
+  appendBubble("user", text);
+  showTyping();
+
+  try {
+    const reply = await callGemini(chatMessages);
+    removeTyping();
+    chatMessages.push({ role: "assistant", text: reply });
+    appendBubble("assistant", reply);
+  } catch(e) {
+    removeTyping();
+    const msgs = document.getElementById("chat-messages");
+    const err = document.createElement("div");
+    err.innerHTML = `<div class="error-box" style="max-width:480px;">⚠️ ${e.message}</div>`;
+    msgs.appendChild(err);
+    msgs.scrollTop = msgs.scrollHeight;
+  } finally {
+    chatLoading = false;
+    document.getElementById("chat-send").disabled = false;
+  }
+}
+
+function sendMessage() {
+  const ta = document.getElementById("chat-textarea");
+  sendText(ta.value.trim());
+}
+
+function onChatKey(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoGrow(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  document.getElementById("chat-send").disabled = !el.value.trim() || chatLoading;
+}
+
+function newChat() {
+  chatMessages = [];
+  renderChatEmpty();
+}
+
+function disconnectKey() {
+  apiKey = "";
+  localStorage.removeItem("hm_gemini_key");
+  chatMessages = [];
+  document.getElementById("chat-key-gate").style.display = "flex";
+  document.getElementById("chat-area").style.display = "none";
+  document.getElementById("chat-top-bar").style.display = "none";
+}
+
+// ── Key gate (chat page) ───────────────────────────────────────────────────────
+
+function onKeyInput() {
+  const v = document.getElementById("chat-key-input").value.trim();
+  document.getElementById("chat-key-btn").disabled = !v;
+}
+
+function saveKey() {
+  const k = document.getElementById("chat-key-input").value.trim();
+  if (!k) return;
+  apiKey = k;
+  localStorage.setItem("hm_gemini_key", k);
+  showChatArea();
+}
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
+
+function renderSidebarIdeas() {
+  document.getElementById("sidebar-ideas").innerHTML = IDEAS.map((idea, i) => `
+    <button class="sidebar-item" onclick="sidebarIdeaClick(${i})">
+      <span class="sidebar-num">${i + 1}</span>
+      <div class="sidebar-text">
+        <p>${idea.title}</p>
+        <span>${idea.stack.join(" · ")}</span>
+      </div>
+      <span class="sidebar-arrow">›</span>
+    </button>`).join("");
+}
+
+function renderSidebarTeammates() {
+  document.getElementById("sidebar-teammates").innerHTML = TEAMMATES.map(t => `
+    <button class="sidebar-item" onclick="sidebarTeammateClick('${t.id}')">
+      <span class="sidebar-av">${t.avatar}</span>
+      <div class="sidebar-text">
+        <p>${t.name}</p>
+        <span>${t.skills.join(" · ")}</span>
+      </div>
+      <span class="sidebar-arrow">›</span>
+    </button>`).join("");
+}
+
+function sidebarIdeaClick(i) {
+  const idea = IDEAS[i];
+  if (!apiKey) { alert("Connect your Gemini key first."); return; }
+  sendText(`Tell me everything about building "${idea.title}" for a hackathon: ${idea.tagline}\n\nCover: architecture, tech stack (${idea.stack.join(", ")}), 24-hour timeline, which teammates I need, and the best pitch angle.`);
+}
+
+function sidebarTeammateClick(id) {
+  const t = TEAMMATES.find(x => x.id === id);
+  if (!apiKey) { alert("Connect your Gemini key first."); return; }
+  sendText(`Analyze ${t.name} as a hackathon teammate. Skills: ${t.skills.join(", ")} (${t.experience}). Interests: ${t.interests}.\n\nWhat role should they own? What projects suit them best? Any risks?`);
+}
+</script>
+</body>
+</html>
